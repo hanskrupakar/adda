@@ -1,5 +1,5 @@
 import logging
-import os
+import os, sys
 import random
 from collections import deque
 from collections import OrderedDict
@@ -9,7 +9,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.contrib import slim
 from tqdm import tqdm
-
+sys.path.append(os.path.abspath('.'))
 import adda
 
 
@@ -108,15 +108,18 @@ def main(source, target, model, output,
     adversary_vars = adda.util.collect_vars('adversary')
 
     # optimizer
-    lr_var = tf.Variable(lr, name='learning_rate', trainable=False)
+    global_step = tf.Variable(0, trainable=False)
+    lr_var= tf.train.exponential_decay(lr, global_step, 2000, 0.75, staircase=True)
+    #lr_var = tf.Variable(lr, name='learning_rate', trainable=False)
     if solver == 'sgd':
         optimizer = tf.train.MomentumOptimizer(lr_var, 0.99)
     else:
-        optimizer = tf.train.AdamOptimizer(lr_var, 0.5)
+        optimizer = tf.train.AdamOptimizer(lr_var)
+    
     mapping_step = optimizer.minimize(
         mapping_loss, var_list=list(target_vars.values()))
     adversary_step = optimizer.minimize(
-        adversary_loss, var_list=list(adversary_vars.values()))
+        adversary_loss, var_list=list(adversary_vars.values()), global_step=global_step)
 
     # set up session and initialize
     config = tf.ConfigProto(device_count=dict(GPU=1))

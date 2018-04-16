@@ -1,5 +1,5 @@
 import logging
-import os
+import os, sys
 import time
 from collections import OrderedDict
 
@@ -8,6 +8,7 @@ import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
 
+sys.path.append(os.path.abspath('.'))
 import adda
 
 

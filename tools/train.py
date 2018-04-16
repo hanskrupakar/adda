@@ -11,6 +11,7 @@ import tensorflow as tf
 from tensorflow.contrib import slim
 from tqdm import tqdm
 
+sys.path.append(os.path.abspath('.'))
 import adda
 
 
@@ -61,12 +62,14 @@ def main(dataset, split, model, output, gpu, iterations, batch_size, display,
     class_loss = tf.losses.sparse_softmax_cross_entropy(label_batch, net)
     loss = tf.losses.get_total_loss()
 
-    lr_var = tf.Variable(lr, name='learning_rate', trainable=False)
+    global_step = tf.Variable(0, trainable=False)
+    lr_var= tf.train.exponential_decay(lr, global_step, 2000, 0.75, staircase=True)
+    #lr_var = tf.Variable(lr, name='learning_rate', trainable=False)
     if solver == 'sgd':
         optimizer = tf.train.MomentumOptimizer(lr_var, 0.99)
     else:
         optimizer = tf.train.AdamOptimizer(lr_var)
-    step = optimizer.minimize(loss)
+    step = optimizer.minimize(loss, global_step=global_step)
 
     config = tf.ConfigProto(device_count=dict(GPU=1))
     config.gpu_options.allow_growth = True
