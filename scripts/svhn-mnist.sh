@@ -33,7 +33,7 @@ python tools/train_adda.py svhn:train mnist:train lenet "adda_lenet_svhn_mnist$1
        --weights "snapshot/lenet_svhn1" \
        --adversary_relu \
        --solver adam
-
+       --stepsize 5000
 # evaluate trained models
 echo 'Source only baseline:'
 python tools/eval_classification.py mnist train lenet "snapshot/lenet_svhn$1"
